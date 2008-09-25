@@ -9,9 +9,9 @@
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @version			$Revision: 60 $
+ * @version			$Revision: 57 $
  * @modifiedby		$LastChangedBy: dho $
- * @lastmodified	$Date: 2008-09-15 07:08:31 +0200 (Mon, 15 Sep 2008) $
+ * @lastmodified	$Date: 2008-09-01 07:25:15 +0200 (Mon, 01 Sep 2008) $
  * @license			http://www.opensource.org/licenses/mit-license.php The MIT License
  */
 
@@ -19,6 +19,7 @@ App::import('Vendor', 'oauth', array('file' => 'OAuth'.DS.'OAuth.php'));
 App::import('Core', 'http_socket');
 
 class OauthConsumerComponent extends Object {
+	private $url = null;
 	
 	/**
 	 * Call API with a GET request
@@ -31,12 +32,14 @@ class OauthConsumerComponent extends Object {
 	}
 	
 	public function getAccessToken($consumerName, $accessTokenURL, $requestToken, $httpMethod = 'POST', $parameters = array()) {
+		$this->url = $accessTokenURL;
 		$request = $this->prepareRequest($consumerName, $requestToken, $httpMethod, $accessTokenURL, $parameters);
 		
 		return $this->doRequest($request);
 	}
 	
 	public function getRequestToken($consumerName, $requestTokenURL, $httpMethod = 'POST', $parameters = array()) {
+		$this->url = $requestTokenURL;
 		$request = $this->prepareRequest($consumerName, null, $httpMethod, $requestTokenURL, $parameters);
 		
 		return $this->doRequest($request);
@@ -79,11 +82,11 @@ class OauthConsumerComponent extends Object {
 	
 	private function doRequest($request) {
 		if ($request->get_normalized_http_method() == 'POST') {
-			$data = $this->doPost($request->get_normalized_http_url(), $request->to_postdata());
+			$data = $this->doPost($this->url, $request->to_postdata());
 		} else {
 			$data = $this->doGet($request->to_url());
 		}
-		
+
 		parse_str($data);
 
 		if (isset($oauth_token) && isset($oauth_token_secret)) {
