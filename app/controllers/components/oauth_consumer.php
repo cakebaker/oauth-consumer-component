@@ -55,6 +55,14 @@ class OauthConsumerComponent extends Object {
 		return $this->doPost($url, $request->to_postdata());
 	}
 	
+	protected function createOauthToken($response) {
+		if (isset($response['oauth_token']) && isset($response['oauth_token_secret'])) {
+			return new OAuthToken($response['oauth_token'], $response['oauth_token_secret']);
+		}
+		
+		return null;
+	}
+	
 	private function createConsumer($consumerName) {
 		$CONSUMERS_PATH = dirname(__FILE__).DS.'oauth_consumers'.DS;
 		App::import('File', 'abstractConsumer', array('file' => $CONSUMERS_PATH.'abstract_consumer.php'));
@@ -87,13 +95,10 @@ class OauthConsumerComponent extends Object {
 			$data = $this->doGet($request->to_url());
 		}
 
-		parse_str($data);
+		$response = array();
+		parse_str($data, $response);
 
-		if (isset($oauth_token) && isset($oauth_token_secret)) {
-			return new OAuthToken($oauth_token, $oauth_token_secret);
-		}
-		
-		return null;
+		return $this->createOauthToken($response);
 	}
 	
 	private function prepareRequest($consumerName, $token, $httpMethod, $url, $parameters) {
