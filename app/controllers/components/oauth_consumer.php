@@ -56,7 +56,7 @@ class OauthConsumerComponent extends Object {
 	}
 	
 	private function createConsumer($consumerName) {
-		$CONSUMERS_PATH = COMPONENTS.'oauth_consumers'.DS;
+		$CONSUMERS_PATH = dirname(__FILE__).DS.'oauth_consumers'.DS;
 		App::import('File', 'abstractConsumer', array('file' => $CONSUMERS_PATH.'abstract_consumer.php'));
 		
 		$fileName = Inflector::underscore($consumerName) . '_consumer.php';
