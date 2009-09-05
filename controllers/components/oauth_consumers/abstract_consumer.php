@@ -20,11 +20,6 @@
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
- *
- * @version			$Revision: 58 $
- * @modifiedby		$LastChangedBy: dho $
- * @lastmodified	$Date: 2008-09-01 07:33:49 +0200 (Mon, 01 Sep 2008) $
- * @license			http://www.opensource.org/licenses/mit-license.php The MIT License
  */
 
 abstract class AbstractConsumer {

@@ -11,12 +11,29 @@
  *
  */
 
-App::import('Vendor', 'oauth', array('file' => 'OAuth'.DS.'OAuth.php'));
 App::import('Core', 'http_socket');
 
 class OauthConsumerComponent extends Object {
 	private $url = null;
 	private $fullResponse = null;
+	
+	public function __construct() {
+		parent::__construct();
+
+		$pathToVendorsFolder = $this->getPathToVendorsFolderWithOAuthLibrary();
+		
+		if ($pathToVendorsFolder == '') {
+			exit('Unable to find the PHP library for OAuth');
+		}
+		
+		$importPrefix = '';
+
+		if ($this->isPathWithinPlugin($pathToVendorsFolder)) {
+			$importPrefix = $this->getPluginName() . '.';
+		}
+		
+		App::import('Vendor', $importPrefix.'oauth', array('file' => 'OAuth'.DS.'OAuth.php'));
+	}
 	
 	/**
 	 * Call API with a GET request
@@ -125,5 +142,40 @@ class OauthConsumerComponent extends Object {
 		parse_str($data, $response);
 
 		return $this->createOAuthToken($response);
+	}
+	
+	private function getPathToVendorsFolderWithOAuthLibrary() {
+		$pathToVendorsFolder = '';
+		
+		if ($this->isPathWithinPlugin(__FILE__)) {
+			$pluginName = $this->getPluginName();
+			
+			if (file_exists(APP.'plugins'.DS.$pluginName.DS.'vendors'.DS.'OAuth')) {
+				$pathToVendorsFolder = APP.'plugins'.DS.$pluginName.DS.'vendors'.DS;
+			}
+		}
+
+		if ($pathToVendorsFolder == '') {
+			if (file_exists(APP.'vendors'.DS.'OAuth')) {
+				$pathToVendorsFolder = APP.'vendors'.DS;
+			} elseif (file_exists(VENDORS.'OAuth')) {
+				$pathToVendorsFolder = VENDORS;
+			}
+		}
+		
+		return $pathToVendorsFolder;
+	}
+	
+	private function getPluginName() {
+		$result = array();
+		if (preg_match('#'.DS.'plugins'.DS.'(.*)'.DS.'controllers#', __FILE__, $result)) { 
+			return $result[1];
+		}
+		
+		return false;
+	}
+	
+	private function isPathWithinPlugin($path) {
+		return strpos($path, DS.'plugins'.DS) ? true : false;
 	}
 }
