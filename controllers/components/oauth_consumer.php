@@ -9,10 +9,6 @@
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @version			$Revision: 57 $
- * @modifiedby		$LastChangedBy: dho $
- * @lastmodified	$Date: 2008-09-01 07:25:15 +0200 (Mon, 01 Sep 2008) $
- * @license			http://www.opensource.org/licenses/mit-license.php The MIT License
  */
 
 App::import('Vendor', 'oauth', array('file' => 'OAuth'.DS.'OAuth.php'));
@@ -20,27 +16,48 @@ App::import('Core', 'http_socket');
 
 class OauthConsumerComponent extends Object {
 	private $url = null;
+	private $fullResponse = null;
 	
 	/**
 	 * Call API with a GET request
 	 */
 	public function get($consumerName, $accessTokenKey, $accessTokenSecret, $url, $getData = array()) {
 		$accessToken = new OAuthToken($accessTokenKey, $accessTokenSecret);
-		$request = $this->prepareRequest($consumerName, $accessToken, 'GET', $url, $getData);
+		$request = $this->createRequest($consumerName, 'GET', $url, $accessToken, $getData);
 		
 		return $this->doGet($request->to_url());
 	}
 	
 	public function getAccessToken($consumerName, $accessTokenURL, $requestToken, $httpMethod = 'POST', $parameters = array()) {
 		$this->url = $accessTokenURL;
-		$request = $this->prepareRequest($consumerName, $requestToken, $httpMethod, $accessTokenURL, $parameters);
+		$queryStringParams = OAuthUtil::parse_parameters($_SERVER['QUERY_STRING']);
+		$parameters['oauth_verifier'] = $queryStringParams['oauth_verifier'];
+		$request = $this->createRequest($consumerName, $httpMethod, $accessTokenURL, $requestToken, $parameters);
 		
 		return $this->doRequest($request);
 	}
 	
-	public function getRequestToken($consumerName, $requestTokenURL, $httpMethod = 'POST', $parameters = array()) {
+	/**
+	 * Useful for debugging purposes to see what is returned when requesting a request/access token.
+	 */
+	public function getFullResponse() {
+		return $this->fullResponse;
+	}
+	
+	/**
+	 * @param $consumerName
+	 * @param $requestTokenURL
+	 * @param $callback An absolute URL to which the Service Provider will redirect the User back when the Obtaining User 
+	 * 					Authorization step is completed. If the Consumer is unable to receive callbacks or a callback URL 
+	 * 					has been established via other means, the parameter value MUST be set to oob (case sensitive), to 
+	 * 					indicate an out-of-band configuration. Section 6.1.1 from http://oauth.net/core/1.0a
+	 * @param $httpMethod 'POST' or 'GET'
+	 * @param $parameters
+	 */
+	public function getRequestToken($consumerName, $requestTokenURL, $callback = 'oob', $httpMethod = 'POST', $parameters = array()) {
 		$this->url = $requestTokenURL;
-		$request = $this->prepareRequest($consumerName, null, $httpMethod, $requestTokenURL, $parameters);
+		$parameters['oauth_callback'] = $callback;
+		$request = $this->createRequest($consumerName, $httpMethod, $requestTokenURL, null, $parameters);
 		
 		return $this->doRequest($request);
 	}
@@ -50,12 +67,12 @@ class OauthConsumerComponent extends Object {
 	 */
 	public function post($consumerName, $accessTokenKey, $accessTokenSecret, $url, $postData = array()) {
 		$accessToken = new OAuthToken($accessTokenKey, $accessTokenSecret);
-		$request = $this->prepareRequest($consumerName, $accessToken, 'POST', $url, $postData);
+		$request = $this->createRequest($consumerName, 'POST', $url, $accessToken, $postData);
 		
 		return $this->doPost($url, $request->to_postdata());
 	}
 	
-	protected function createOauthToken($response) {
+	protected function createOAuthToken($response) {
 		if (isset($response['oauth_token']) && isset($response['oauth_token_secret'])) {
 			return new OAuthToken($response['oauth_token'], $response['oauth_token_secret']);
 		}
@@ -78,6 +95,14 @@ class OauthConsumerComponent extends Object {
 		}
 	}
 	
+	private function createRequest($consumerName, $httpMethod, $url, $token, array $parameters) {
+		$consumer = $this->createConsumer($consumerName);
+		$request = OAuthRequest::from_consumer_and_token($consumer, $token, $httpMethod, $url, $parameters);
+		$request->sign_request(new OAuthSignatureMethod_HMAC_SHA1(), $consumer, $token);
+		
+		return $request;
+	}
+	
 	private function doGet($url) {
 		$socket = new HttpSocket();
 		return $socket->get($url);
@@ -95,17 +120,10 @@ class OauthConsumerComponent extends Object {
 			$data = $this->doGet($request->to_url());
 		}
 
+		$this->fullResponse = $data;
 		$response = array();
 		parse_str($data, $response);
 
-		return $this->createOauthToken($response);
-	}
-	
-	private function prepareRequest($consumerName, $token, $httpMethod, $url, $parameters) {
-		$consumer = $this->createConsumer($consumerName);
-		$request = OAuthRequest::from_consumer_and_token($consumer, $token, $httpMethod, $url, $parameters);
-		$request->sign_request(new OAuthSignatureMethod_HMAC_SHA1(), $consumer, $token);
-		
-		return $request;
+		return $this->createOAuthToken($response);
 	}
 }
