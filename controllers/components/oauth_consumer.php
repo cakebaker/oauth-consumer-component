@@ -13,12 +13,12 @@
 
 App::import('Core', 'http_socket');
 
-class OauthConsumerComponent extends Object {
+class OauthConsumerComponent extends Component {
 	private $url = null;
 	private $fullResponse = null;
 	
-	public function __construct() {
-		parent::__construct();
+	public function __construct(ComponentCollection $collection, $settings = array()) {
+		parent::__construct($collection, $settings);
 
 		$pathToVendorsFolder = $this->getPathToVendorsFolderWithOAuthLibrary();
 		
