@@ -6,7 +6,7 @@
  * 
  * class FireEagleConsumer extends AbstractConsumer {
  *     public function __construct() {
- * 	       parent::__construct('key', 'secret');
+ *         parent::__construct('key', 'secret');
  *     }
  * }
  * 
@@ -23,15 +23,15 @@
  */
 
 abstract class AbstractConsumer {
-	private $consumerKey = null;
-	private $consumerSecret = null;
-	
-	public function __construct($consumerKey, $consumerSecret) {
-		$this->consumerKey = $consumerKey;
-		$this->consumerSecret = $consumerSecret;
-	}
-	
-	final public function getConsumer() {
-		return new OAuthConsumer($this->consumerKey, $this->consumerSecret);
-	}
+    private $consumerKey = null;
+    private $consumerSecret = null;
+
+    public function __construct($consumerKey, $consumerSecret) {
+        $this->consumerKey = $consumerKey;
+        $this->consumerSecret = $consumerSecret;
+    }
+
+    final public function getConsumer() {
+        return new OAuthConsumer($this->consumerKey, $this->consumerSecret);
+    }
 }
