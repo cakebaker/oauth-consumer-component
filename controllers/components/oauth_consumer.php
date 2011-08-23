@@ -36,7 +36,7 @@ class OauthConsumerComponent extends Object {
     }
 
     /**
-     * Call API with a GET request
+     * Call API with a GET request. Returns either false on failure or the response body.
      */
     public function get($consumerName, $accessTokenKey, $accessTokenSecret, $url, $getData = array()) {
         $accessToken = new OAuthToken($accessTokenKey, $accessTokenSecret);
@@ -55,7 +55,7 @@ class OauthConsumerComponent extends Object {
     }
 
     /**
-     * Useful for debugging purposes to see what is returned when requesting a request/access token.
+     * Returns an array with the complete response of the previous request, or null, if there was no request.
      */
     public function getFullResponse() {
         return $this->fullResponse;
@@ -64,10 +64,10 @@ class OauthConsumerComponent extends Object {
     /**
      * @param $consumerName
      * @param $requestTokenURL
-     * @param $callback An absolute URL to which the Service Provider will redirect the User back when the Obtaining User 
-     *                  Authorization step is completed. If the Consumer is unable to receive callbacks or a callback URL 
+     * @param $callback An absolute URL to which the server will redirect the resource owner back when the Resource Owner
+     *                  Authorization step is completed. If the client is unable to receive callbacks or a callback URL 
      *                  has been established via other means, the parameter value MUST be set to oob (case sensitive), to 
-     *                  indicate an out-of-band configuration. Section 6.1.1 from http://oauth.net/core/1.0a
+     *                  indicate an out-of-band configuration. Section 2.1 from http://tools.ietf.org/html/rfc5849
      * @param $httpMethod 'POST' or 'GET'
      * @param $parameters
      */
@@ -80,7 +80,7 @@ class OauthConsumerComponent extends Object {
     }
 
     /**
-     * Call API with a POST request
+     * Call API with a POST request. Returns either false on failure or the response body.
      */
     public function post($consumerName, $accessTokenKey, $accessTokenSecret, $url, $postData = array()) {
         $accessToken = new OAuthToken($accessTokenKey, $accessTokenSecret);
@@ -122,12 +122,18 @@ class OauthConsumerComponent extends Object {
 
     private function doGet($url) {
         $socket = new HttpSocket();
-        return $socket->get($url);
+        $result = $socket->get($url);
+        $this->fullResponse = $socket->response;
+
+        return $result;
     }
 
     private function doPost($url, $data) {
         $socket = new HttpSocket();
-        return $socket->post($url, $data);
+        $result = $socket->post($url, $data);
+        $this->fullResponse = $socket->response;
+
+        return $result;
     }
 
     private function doRequest($request) {
@@ -137,7 +143,6 @@ class OauthConsumerComponent extends Object {
             $data = $this->doGet($request->to_url());
         }
 
-        $this->fullResponse = $data;
         $response = array();
         parse_str($data, $response);
 
