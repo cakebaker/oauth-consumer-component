@@ -1,5 +1,156 @@
 <?php
-// vim: foldmethod=marker
+/**
+ * A simple OAuth consumer component for CakePHP.
+ * 
+ * Uses the OAuth library from http://oauth.googlecode.com/svn/code/php/
+ * 
+ * Copyright (c) by Daniel Hofstetter (http://cakebaker.42dh.com)
+ *
+ * Licensed under The MIT License
+ * Redistributions of files must retain the above copyright notice.
+ *
+ */
+
+App::uses('HttpSocket', 'Network/Http');
+
+class OAuthConsumerComponent extends Component {
+    private $url = null;
+    private $fullResponse = null;
+
+    public function __construct(ComponentCollection $collection, $settings = array()) {
+        parent::__construct($collection, $settings);
+    }
+
+    /**
+     * Call API with a GET request
+     */
+    public function get($consumerName, $accessTokenKey, $accessTokenSecret, $url, $getData = array()) {
+        $accessToken = new OAuthToken($accessTokenKey, $accessTokenSecret);
+        $request = $this->createRequest($consumerName, 'GET', $url, $accessToken, $getData);
+
+        return $this->doGet($request->to_url());
+    }
+
+    public function getAccessToken($consumerName, $accessTokenURL, $requestToken, $httpMethod = 'POST', $parameters = array()) {
+        $this->url = $accessTokenURL;
+        $queryStringParams = OAuthUtil::parse_parameters($_SERVER['QUERY_STRING']);
+        $parameters['oauth_verifier'] = $queryStringParams['oauth_verifier'];
+        $request = $this->createRequest($consumerName, $httpMethod, $accessTokenURL, $requestToken, $parameters);
+
+        return $this->doRequest($request);
+    }
+
+    /**
+     * Useful for debugging purposes to see what is returned when requesting a request/access token.
+     */
+    public function getFullResponse() {
+        return $this->fullResponse;
+    }
+
+    /**
+     * @param $consumerName
+     * @param $requestTokenURL
+     * @param $callback An absolute URL to which the Service Provider will redirect the User back when the Obtaining User 
+     * 					Authorization step is completed. If the Consumer is unable to receive callbacks or a callback URL 
+     * 					has been established via other means, the parameter value MUST be set to oob (case sensitive), to 
+     * 					indicate an out-of-band configuration. Section 6.1.1 from http://oauth.net/core/1.0a
+     * @param $httpMethod 'POST' or 'GET'
+     * @param $parameters
+     */
+    public function getRequestToken($consumerName, $requestTokenURL, $callback = 'oob', $httpMethod = 'POST', $parameters = array()) {
+        $this->url = $requestTokenURL;
+        $parameters['oauth_callback'] = $callback;
+        $request = $this->createRequest($consumerName, $httpMethod, $requestTokenURL, null, $parameters);
+
+        return $this->doRequest($request);
+    }
+
+    /**
+     * Call API with a POST request
+     */
+    public function post($consumerName, $accessTokenKey, $accessTokenSecret, $url, $postData = array()) {
+        $accessToken = new OAuthToken($accessTokenKey, $accessTokenSecret);
+        $request = $this->createRequest($consumerName, 'POST', $url, $accessToken, $postData);
+
+        return $this->doPost($url, $request->to_postdata());
+    }
+
+    protected function createOAuthToken($response) {
+        if (isset($response['oauth_token']) && isset($response['oauth_token_secret'])) {
+            return new OAuthToken($response['oauth_token'], $response['oauth_token_secret']);
+        }
+
+        return null;
+    }
+
+    private function createConsumer($consumerName) {
+        $className = $consumerName . 'Consumer';
+        $fileName = $className . '.php';
+
+        $consumerPath = dirname(__FILE__) . DS . 'OAuthConsumers' . DS;
+        require($consumerPath . 'AbstractConsumer.php');
+        require($consumerPath . $fileName);
+
+        $consumerClass = new $className();
+        return $consumerClass->getConsumer();
+    }
+
+    private function createRequest($consumerName, $httpMethod, $url, $token, array $parameters) {
+        $consumer = $this->createConsumer($consumerName);
+        $request = OAuthRequest::from_consumer_and_token($consumer, $token, $httpMethod, $url, $parameters);
+        $request->sign_request(new OAuthSignatureMethod_HMAC_SHA1(), $consumer, $token);
+
+        return $request;
+    }
+
+    private function doGet($url) {
+        $socket = new HttpSocket();
+        return $socket->get($url);
+    }
+
+    private function doPost($url, $data) {
+        $socket = new HttpSocket();
+        return $socket->post($url, $data);
+    }
+
+    private function doRequest($request) {
+        if ($request->get_normalized_http_method() == 'POST') {
+            $data = $this->doPost($this->url, $request->to_postdata());
+        } else {
+            $data = $this->doGet($request->to_url());
+        }
+
+        $this->fullResponse = $data;
+        $response = array();
+        parse_str($data, $response);
+
+        return $this->createOAuthToken($response);
+    }
+}
+
+/*
+The MIT License
+
+Copyright (c) 2007 Andy Smith
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
 
 /* Generic exception class
  */
@@ -773,5 +924,3 @@ class OAuthUtil {
     return implode('&', $pairs);
   }
 }
-
-?>
