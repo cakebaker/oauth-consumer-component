@@ -16,9 +16,13 @@ App::uses('HttpSocket', 'Network/Http');
 class OAuthConsumerComponent extends Component {
     private $url = null;
     private $fullResponse = null;
+    private $consumerPath = null;
 
     public function __construct(ComponentCollection $collection, $settings = array()) {
         parent::__construct($collection, $settings);
+
+        $this->consumerPath = dirname(__FILE__) . DS . 'OAuthConsumers' . DS;
+        require($this->consumerPath . 'AbstractConsumer.php');
     }
 
     /**
@@ -84,15 +88,21 @@ class OAuthConsumerComponent extends Component {
     }
 
     private function createConsumer($consumerName) {
+        if (ClassRegistry::isKeySet($consumerName)) {
+            return ClassRegistry::getObject($consumerName);
+        }
+
         $className = $consumerName . 'Consumer';
         $fileName = $className . '.php';
 
-        $consumerPath = dirname(__FILE__) . DS . 'OAuthConsumers' . DS;
-        require($consumerPath . 'AbstractConsumer.php');
-        require($consumerPath . $fileName);
+        require($this->consumerPath . $fileName);
 
         $consumerClass = new $className();
-        return $consumerClass->getConsumer();
+        $consumer = $consumerClass->getConsumer();
+
+        ClassRegistry::addObject($consumerName, $consumer);
+
+        return $consumer;
     }
 
     private function createRequest($consumerName, $httpMethod, $url, $token, array $parameters) {
