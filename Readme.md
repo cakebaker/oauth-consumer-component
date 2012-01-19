@@ -13,11 +13,13 @@ An OAuth consumer component for CakePHP 2.0.x supporting OAuth 1.0 as defined in
 For each API you want to use, you have to write a consumer class. This class is responsible to handle the consumer key and consumer secret you get from the API provider (for using the Twitter API, as in this example, you have to register your application at https://twitter.com/oauth).
 
 The requirements for such a class are:
+
 * its name must end with `Consumer`
 * it must extend `AbstractConsumer`
 * it must be placed in the `OAuthConsumers` folder
 
 As you can see in the example below, a consumer class is pretty simple:
+
 ```php
 // Controller/Component/OAuthConsumers/TwitterConsumer.php
 class TwitterConsumer extends AbstractConsumer {
@@ -31,6 +33,7 @@ As usual in CakePHP, you have to add the component to the `$components` array of
 In the `index` method a request token is obtained and the user is redirected to Twitter where he has to authorize the request token. Notice the first parameter passed to the `getRequestToken` method, it is the name (without `Consumer`) of the previously created consumer class and tells the component which credentials it should use for the request.
 
 In the `callback` method the request token is exchanged for an access token. Using this access token, a new status is posted to Twitter. Please note that in a real application, you would save the access token data in a database to avoid that the user has to get an access token over and over again.
+
 ```php
 // Controller/ExampleController.php
 class TwitterController extends AppController {
@@ -54,7 +57,7 @@ class TwitterController extends AppController {
 
 ## Contact
 
-If you have questions or feedback, feel free to contact me via Twitter (@dhofstet) or by email (daniel.hofstetter@42dh.com)
+If you have questions or feedback, feel free to contact me via Twitter ([@dhofstet](https://twitter.com/dhofstet)) or by email (daniel.hofstetter@42dh.com).
 
 ## License
 
