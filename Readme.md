@@ -55,6 +55,10 @@ class TwitterController extends AppController {
 }
 ```
 
+## Migration from CakePHP 1.x to CakePHP 2.0.x
+
+If you are migrating your application to CakePHP 2.0.x, you have to make a few changes beside updating the component. First, you have to rename `OauthConsumer` to `OAuthConsumer` in the `$components` array and everywhere you are using the component. And second, you have to move all consumer classes to the new `OAuthConsumers` folder and camel-case the file names, i.e. `twitter_consumer.php` becomes `TwitterConsumer.php`.
+
 ## Contact
 
 If you have questions or feedback, feel free to contact me via Twitter ([@dhofstet](https://twitter.com/dhofstet)) or by email (daniel.hofstetter@42dh.com).
