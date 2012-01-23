@@ -41,15 +41,22 @@ class TwitterController extends AppController {
 
   public function index() {
     $requestToken = $this->OAuthConsumer->getRequestToken('Twitter', 'https://api.twitter.com/oauth/request_token', 'http://' . $_SERVER['HTTP_HOST'] . '/twitter/callback');
-    $this->Session->write('twitter_request_token', $requestToken);
-    $this->redirect('https://api.twitter.com/oauth/authorize?oauth_token=' . $requestToken->key);
+
+    if ($requestToken) {
+      $this->Session->write('twitter_request_token', $requestToken);
+      $this->redirect('https://api.twitter.com/oauth/authorize?oauth_token=' . $requestToken->key);
+    } else {
+      // an error occured when obtaining a request token
+    }
   }
 
   public function callback() {
     $requestToken = $this->Session->read('twitter_request_token');
     $accessToken = $this->OAuthConsumer->getAccessToken('Twitter', 'https://api.twitter.com/oauth/access_token', $requestToken);
 
-    $this->OAuthConsumer->post('Twitter', $accessToken->key, $accessToken->secret, 'https://api.twitter.com/1/statuses/update.json', array('status' => 'hello world!'));
+    if ($accessToken) {
+      $this->OAuthConsumer->post('Twitter', $accessToken->key, $accessToken->secret, 'https://api.twitter.com/1/statuses/update.json', array('status' => 'hello world!'));
+    }
     exit;
   }
 }
