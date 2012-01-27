@@ -4,17 +4,15 @@
  * 
  * A typical class extending this base class looks like:
  * 
- * class FireEagleConsumer extends AbstractConsumer {
+ * class TwitterConsumer extends AbstractConsumer {
  *     public function __construct() {
- *         parent::__construct('key', 'secret');
+ * 	       parent::__construct('key', 'secret');
  *     }
  * }
  * 
  * The following conventions apply for subclasses:
- * - class name has to end with "Consumer"
- * - each class has to be in its own file, the name ending with "_consumer.php"
- * - class name is camel-cased, file name uses underscores, e.g. FireEagleConsumer 
- *   and fire_eagle_consumer.php 
+ * - class name has to end with "Consumer", e.g. TwitterConsumer
+ * - each class has to be in its own file and named like the class it contains, e.g. TwitterConsumer.php
  * 
  * Copyright (c) by Daniel Hofstetter (http://cakebaker.42dh.com)
  *
