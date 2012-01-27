@@ -2,7 +2,7 @@
 
 ## Purpose
 
-An OAuth consumer component for CakePHP 2.0.x supporting OAuth 1.0 as defined in http://tools.ietf.org/html/rfc5849.
+An OAuth consumer component for CakePHP 2.0.x supporting OAuth 1.0 as defined in http://tools.ietf.org/html/rfc5849. For CakePHP 1.x, please checkout the [`cakephp_1.x` branch](https://github.com/cakebaker/oauth-consumer-component/tree/cakephp_1.x).
 
 ## Installation
 
