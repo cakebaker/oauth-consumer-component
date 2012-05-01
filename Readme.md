@@ -2,7 +2,7 @@
 
 ## Purpose
 
-An OAuth consumer component for CakePHP 2.0.x supporting OAuth 1.0 as defined in http://tools.ietf.org/html/rfc5849. For CakePHP 1.x, please checkout the [`cakephp_1.x` branch](https://github.com/cakebaker/oauth-consumer-component/tree/cakephp_1.x).
+An OAuth consumer component for CakePHP 2.x supporting OAuth 1.0 as defined in http://tools.ietf.org/html/rfc5849. For CakePHP 1.x, please checkout the [`cakephp_1.x` branch](https://github.com/cakebaker/oauth-consumer-component/tree/cakephp_1.x).
 
 ## Installation
 
@@ -30,7 +30,7 @@ class TwitterConsumer extends AbstractConsumer {
 ```
 As usual in CakePHP, you have to add the component to the `$components` array of the controller(s) in which you want to use the component.
 
-In the `index` method a request token is obtained and the user is redirected to Twitter where he has to authorize the request token. Notice the first parameter passed to the `getRequestToken` method, it is the name (without `Consumer`) of the previously created consumer class and tells the component which credentials it should use for the request.
+In the `index` method a request token is obtained and the user is redirected to Twitter to authorize the request token. Notice the first parameter passed to the `getRequestToken` method, it is the name (without `Consumer`) of the previously created consumer class and tells the component which credentials to use for the request.
 
 In the `callback` method the request token is exchanged for an access token. Using this access token, a new status is posted to Twitter. Please note that in a real application, you would save the access token data in a database to avoid that the user has to get an access token over and over again.
 
@@ -62,9 +62,9 @@ class TwitterController extends AppController {
 }
 ```
 
-## Migration from CakePHP 1.x to CakePHP 2.0.x
+## Migration from CakePHP 1.x to CakePHP 2.x
 
-If you are migrating your application to CakePHP 2.0.x, you have to make a few changes beside updating the component. First, you have to rename `OauthConsumer` to `OAuthConsumer` in the `$components` array and everywhere you are using the component. And second, you have to move all consumer classes to the new `OAuthConsumers` folder and camel-case the file names, i.e. `twitter_consumer.php` becomes `TwitterConsumer.php`.
+If you are migrating your application to CakePHP 2.x, you have to make a few changes beside updating the component. First, you have to rename `OauthConsumer` to `OAuthConsumer` in the `$components` array and everywhere you are using the component. And second, you have to move all consumer classes to the new `OAuthConsumers` folder and camel-case the file names, i.e. `twitter_consumer.php` becomes `TwitterConsumer.php`.
 
 ## Contact
 
