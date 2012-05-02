@@ -22,6 +22,7 @@ The requirements for such a class are:
 As you can see in the example below, a consumer class is pretty simple:
 
 ```php
+<?php
 // controllers/components/oauth_consumers/twitter_consumer.php
 class TwitterConsumer extends AbstractConsumer {
   public function __construct() {
@@ -36,6 +37,7 @@ In the `index` method a request token is obtained and the user is redirected to 
 In the `callback` method the request token is exchanged for an access token. Using this access token, a new status is posted to Twitter. Please note that in a real application, you would save the access token data in a database to avoid that the user has to get an access token over and over again.
 
 ```php
+<?php
 // controllers/twitter_controller.php
 class TwitterController extends AppController {
   public $uses = array();
