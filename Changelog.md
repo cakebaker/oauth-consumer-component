@@ -17,7 +17,7 @@
 
 * Including the PHP library for OAuth in the package for convenience purposes, so you no longer have to download this library separately
 * Adding a `getFullResponse()` method for debugging purposes
-* Adapting the class for OAuth 1.0a. The `getRequestToken()` got a new parameter named `$callback`: `getRequestToken($consumerName, $requestTokenURL, $callback = 'oob', $httpMethod = 'POST', $parameters = array())`
+* Adapting the class for OAuth 1.0a. The `getRequestToken()` method got a new parameter named `$callback`: `getRequestToken($consumerName, $requestTokenURL, $callback = 'oob', $httpMethod = 'POST', $parameters = array())`
 * Fixing a bug that causes a "class not found" error when both the component and the "vendors" files are in a plugin
 
 ### v2009-02-06
