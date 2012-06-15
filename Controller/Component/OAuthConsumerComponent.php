@@ -18,7 +18,7 @@ class OAuthConsumerComponent extends Component {
     private $fullResponse = null;
     private $consumerPath = null;
 
-    public function __construct(ComponentCollection $collection, $settings = array()) {
+    public function __construct(ComponentCollection $collection, array $settings = array()) {
         parent::__construct($collection, $settings);
 
         $this->consumerPath = dirname(__FILE__) . DS . 'OAuthConsumers' . DS;
@@ -28,14 +28,14 @@ class OAuthConsumerComponent extends Component {
     /**
      * Call API with a GET request
      */
-    public function get($consumerName, $accessTokenKey, $accessTokenSecret, $url, $getData = array()) {
+    public function get($consumerName, $accessTokenKey, $accessTokenSecret, $url, array $getData = array()) {
         $accessToken = new OAuthToken($accessTokenKey, $accessTokenSecret);
         $request = $this->createRequest($consumerName, 'GET', $url, $accessToken, $getData);
 
         return $this->doGet($request->to_url());
     }
 
-    public function getAccessToken($consumerName, $accessTokenURL, $requestToken, $httpMethod = 'POST', $parameters = array()) {
+    public function getAccessToken($consumerName, $accessTokenURL, $requestToken, $httpMethod = 'POST', array $parameters = array()) {
         $this->url = $accessTokenURL;
         $queryStringParams = OAuthUtil::parse_parameters($_SERVER['QUERY_STRING']);
         $parameters['oauth_verifier'] = $queryStringParams['oauth_verifier'];
@@ -61,7 +61,7 @@ class OAuthConsumerComponent extends Component {
      * @param $httpMethod 'POST' or 'GET'
      * @param $parameters
      */
-    public function getRequestToken($consumerName, $requestTokenURL, $callback = 'oob', $httpMethod = 'POST', $parameters = array()) {
+    public function getRequestToken($consumerName, $requestTokenURL, $callback = 'oob', $httpMethod = 'POST', array $parameters = array()) {
         $this->url = $requestTokenURL;
         $parameters['oauth_callback'] = $callback;
         $request = $this->createRequest($consumerName, $httpMethod, $requestTokenURL, null, $parameters);
@@ -72,14 +72,14 @@ class OAuthConsumerComponent extends Component {
     /**
      * Call API with a POST request
      */
-    public function post($consumerName, $accessTokenKey, $accessTokenSecret, $url, $postData = array()) {
+    public function post($consumerName, $accessTokenKey, $accessTokenSecret, $url, array $postData = array()) {
         $accessToken = new OAuthToken($accessTokenKey, $accessTokenSecret);
         $request = $this->createRequest($consumerName, 'POST', $url, $accessToken, $postData);
 
         return $this->doPost($url, $request->to_postdata());
     }
 
-    protected function createOAuthToken($response) {
+    protected function createOAuthToken(array $response) {
         if (isset($response['oauth_token']) && isset($response['oauth_token_secret'])) {
             return new OAuthToken($response['oauth_token'], $response['oauth_token_secret']);
         }
