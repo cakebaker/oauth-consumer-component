@@ -79,6 +79,20 @@ class OAuthConsumerComponent extends Component {
         return $this->doPost($url, $request->to_postdata());
     }
 
+    /**
+     * Call API with a POST request, the content type set to multipart/form-data.
+     * This is, for example, necessary for Twitter's update_with_media API method (https://dev.twitter.com/docs/api/1/post/statuses/update_with_media)
+     * $paths a key-value array, example: array('media[]' => '/home/dho/avatar.png')
+     * Returns either false on failure or an HttpResponse object.
+     */
+    public function postMultipartFormData($consumerName, $accessTokenKey, $accessTokenSecret, $url, array $paths, array $postData = array()) {
+        $accessToken = new OAuthToken($accessTokenKey, $accessTokenSecret);
+        $request = $this->createRequest($consumerName, 'POST', $url, $accessToken, array());
+        $authorization = str_replace('Authorization: ', '', $request->to_header());
+
+        return $this->doPostMultipartFormData($url, $authorization, $paths, $postData);
+    }
+
     protected function createOAuthToken(array $response) {
         if (isset($response['oauth_token']) && isset($response['oauth_token_secret'])) {
             return new OAuthToken($response['oauth_token'], $response['oauth_token_secret']);
@@ -121,6 +135,38 @@ class OAuthConsumerComponent extends Component {
     private function doPost($url, $data) {
         $socket = new HttpSocket();
         return $socket->post($url, $data);
+    }
+
+    private function doPostMultipartFormData($url, $authorization, $paths, $data) {
+        App::uses('String', 'Utility');
+        $boundary = String::uuid();
+
+        $body = "--{$boundary}\r\n";
+
+        foreach ($data as $key => $value) {
+            $body .= "Content-Disposition: form-data; name=\"{$key}\"\r\n";
+            $body .= "\r\n";
+            $body .= "{$value}\r\n";
+            $body .= "--{$boundary}\r\n";
+        }
+
+        foreach ($paths as $key => $path) {
+            $body .= "Content-Disposition: form-data; name=\"{$key}\"; filename=\"{$path}\"\r\n";
+            $body .= "\r\n";
+            $body .= file_get_contents($path) . "\r\n";
+            $body .= "--{$boundary}--\r\n";
+        }
+
+        $socket = new HttpSocket();
+        $result = $socket->request(array('method' => 'POST',
+                                         'uri' => $url,
+                                         'header' => array(
+                                             'Authorization' => $authorization,
+                                             'Content-Type' => "multipart/form-data; boundary={$boundary}"),
+                                         'body' => $body));
+        $this->fullResponse = $result;
+
+        return $result;
     }
 
     private function doRequest($request) {
